@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const app = express();
+
+// Usar el puerto proporcionado por Railway o 3000 en local
 const PORT = process.env.PORT || 3000;
 
 // Habilitar CORS para múltiples orígenes
@@ -42,7 +44,7 @@ app.get('/api/proxy', async (req, res) => {
     }
 });
 
-// Iniciar servidor
+// Iniciar servidor en el puerto correcto
 app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
 });

@@ -1,15 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-const mysql = require('mysql2'); // Importar el paquete mysql2
-require('dotenv').config();  // Asegúrate de que dotenv esté instalado y configurado
+const mysql = require('mysql2');
+require('dotenv').config();
 
 const app = express();
-
-// Usar el puerto proporcionado por Railway o 3000 en local
 const PORT = process.env.PORT || 3000;
 
-// Habilitar CORS para múltiples orígenes
+// Configuración de CORS
 const allowedOrigins = ['http://localhost:3000', 'https://tudominio.com'];
 app.use(cors({
     origin: function (origin, callback) {
@@ -24,16 +22,22 @@ app.use(cors({
 // Middleware para JSON
 app.use(express.json());
 
-// Conectar a MySQL usando la URL de conexión de Railway
-const db = mysql.createConnection(process.env.MYSQL_URL);
+// Configurar conexión a MySQL
+const db = mysql.createConnection({
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_PASSWORD,
+    database: process.env.MYSQL_DATABASE,
+    port: process.env.MYSQL_PORT
+});
 
-// Conectar a la base de datos
+// Intentar conectar a MySQL
 db.connect(err => {
     if (err) {
-        console.error('Error conectando a MySQL:', err);
-        return;
+        console.error('❌ Error conectando a MySQL:', err.message);
+        process.exit(1);
     }
-    console.log('Conectado a MySQL en Railway');
+    console.log('✅ Conectado a MySQL en Railway');
 });
 
 // Endpoint de prueba
@@ -50,7 +54,7 @@ app.get('/api/data', (req, res) => {
 app.get('/api/proxy', async (req, res) => {
     const { url } = req.query;
     if (!url) return res.status(400).json({ error: 'Falta el parámetro URL' });
-    
+
     try {
         const response = await axios.get(url);
         res.json(response.data);
@@ -59,7 +63,20 @@ app.get('/api/proxy', async (req, res) => {
     }
 });
 
-// Iniciar servidor en el puerto correcto
+// 🆕 Endpoint para obtener usuarios desde MySQL
+app.get('/api/users', (req, res) => {
+    const query = 'SELECT * FROM usuarios';
+    
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('❌ Error en la consulta:', err.message);
+            return res.status(500).json({ error: 'Error en la base de datos' });
+        }
+        res.json(results);
+    });
+});
+
+// Iniciar servidor
 app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
+    console.log(`🚀 Servidor corriendo en http://0.0.0.0:${PORT}`);
 });

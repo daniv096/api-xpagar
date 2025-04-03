@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const mysql = require('mysql2'); // Importar el paquete mysql2
+require('dotenv').config();  // Asegúrate de que dotenv esté instalado y configurado
+
 const app = express();
 
 // Usar el puerto proporcionado por Railway o 3000 en local
@@ -20,6 +23,18 @@ app.use(cors({
 
 // Middleware para JSON
 app.use(express.json());
+
+// Conectar a MySQL usando la URL de conexión de Railway
+const db = mysql.createConnection(process.env.MYSQL_URL);
+
+// Conectar a la base de datos
+db.connect(err => {
+    if (err) {
+        console.error('Error conectando a MySQL:', err);
+        return;
+    }
+    console.log('Conectado a MySQL en Railway');
+});
 
 // Endpoint de prueba
 app.get('/api/status', (req, res) => {
